@@ -66,21 +66,21 @@ export default function App() {
         <section className="brutalist-border p-6 bg-metal-gray">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
             <div className="w-full">
-              <label className="block font-mono text-xs uppercase mb-2 opacity-70">Modifier</label>
+              <label className="block font-sans text-xs font-bold uppercase mb-2 opacity-70">Modifier</label>
               <select
                 value={selectedModifier}
                 onChange={(e) => setSelectedModifier(e.target.value)}
-                className="w-full bg-metal-black border border-metal-white p-3 font-mono text-sm focus:outline-none focus:border-metal-silver"
+                className="w-full bg-metal-black border border-metal-white p-3 font-sans text-sm focus:outline-none focus:border-metal-silver"
               >
                 {MODIFIERS.map(m => <option key={m} value={m}>{m}</option>)}
               </select>
             </div>
             <div className="w-full">
-              <label className="block font-mono text-xs uppercase mb-2 opacity-70">Base Genre</label>
+              <label className="block font-sans text-xs font-bold uppercase mb-2 opacity-70">Base Genre</label>
               <select
                 value={selectedGenre}
                 onChange={(e) => setSelectedGenre(e.target.value)}
-                className="w-full bg-metal-black border border-metal-white p-3 font-mono text-sm focus:outline-none focus:border-metal-silver"
+                className="w-full bg-metal-black border border-metal-white p-3 font-sans text-sm focus:outline-none focus:border-metal-silver"
               >
                 {SUBGENRES.map(g => <option key={g} value={g}>{g}</option>)}
               </select>

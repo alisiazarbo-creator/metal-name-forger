@@ -2,6 +2,40 @@ import { GoogleGenAI, Type } from "@google/genai";
 
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
+export interface DemoSongResult {
+  title: string;
+  lyrics: string;
+  structure: string;
+}
+
+export async function generateDemoSong(bandName: string, genre: string): Promise<DemoSongResult | null> {
+  const prompt = `Generate a demo song for a ${genre} band named "${bandName}". 
+  Provide a brutal song title, a few verses/chorus of lyrics, and a brief description of the song structure (e.g., "Fast tremolo picking intro, slow crushing breakdown").`;
+
+  const response = await ai.models.generateContent({
+    model: "gemini-3-flash-preview",
+    contents: prompt,
+    config: {
+      responseMimeType: "application/json",
+      responseSchema: {
+        type: Type.OBJECT,
+        properties: {
+          title: { type: Type.STRING, description: "The song title" },
+          lyrics: { type: Type.STRING, description: "The song lyrics" },
+          structure: { type: Type.STRING, description: "Description of the song structure" },
+        },
+        required: ["title", "lyrics", "structure"],
+      },
+    },
+  });
+
+  try {
+    return JSON.parse(response.text || "null");
+  } catch (e) {
+    console.error("Failed to parse Gemini response", e);
+    return null;
+  }
+}
 export interface BandNameResult {
   name: string;
   description: string;

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Skull, Flame, Zap, Sword, Ghost, Music } from 'lucide-react';
-import { generateMetalBandNames, BandNameResult } from './services/geminiService';
+import { Skull, Flame, Zap, Sword, Ghost, Music, Play, X } from 'lucide-react';
+import { generateMetalBandNames, BandNameResult, generateDemoSong, DemoSongResult } from './services/geminiService';
 
 const SUBGENRES = [
   "Death Metal",
@@ -35,6 +35,10 @@ export default function App() {
   const [loading, setLoading] = useState(false);
   const [selectedGenre, setSelectedGenre] = useState<string>("Death Metal");
   const [selectedModifier, setSelectedModifier] = useState<string>("None");
+  
+  // Demo Song State
+  const [activeSong, setActiveSong] = useState<DemoSongResult | null>(null);
+  const [songLoading, setSongLoading] = useState<string | null>(null);
 
   const handleGenerate = async () => {
     setLoading(true);
@@ -48,6 +52,18 @@ export default function App() {
       console.error(error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleGenerateSong = async (bandName: string, genre: string) => {
+    setSongLoading(bandName);
+    try {
+      const song = await generateDemoSong(bandName, genre);
+      setActiveSong(song);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setSongLoading(null);
     }
   };
 
@@ -110,9 +126,25 @@ export default function App() {
                   <h2 className="text-3xl md:text-4xl font-display uppercase text-metal-white group-hover:text-metal-silver transition-colors">
                     {band.name}
                   </h2>
-                  <span className="font-mono text-[10px] uppercase bg-metal-white text-metal-black px-2 py-1">
-                    {band.genre}
-                  </span>
+                  <div className="flex flex-col items-end gap-2">
+                    <span className="font-mono text-[10px] uppercase bg-metal-white text-metal-black px-2 py-1">
+                      {band.genre}
+                    </span>
+                    <button 
+                      onClick={() => handleGenerateSong(band.name, band.genre)}
+                      disabled={!!songLoading}
+                      className="flex items-center gap-1 font-sans text-[10px] font-bold uppercase text-metal-white hover:text-metal-silver disabled:opacity-50"
+                    >
+                      {songLoading === band.name ? (
+                        "Summoning..."
+                      ) : (
+                        <>
+                          <Play size={10} fill="currentColor" />
+                          Demo Song
+                        </>
+                      )}
+                    </button>
+                  </div>
                 </div>
                 <p className="font-sans text-sm opacity-80 leading-relaxed italic border-l-2 border-metal-white pl-4">
                   "{band.description}"
@@ -135,6 +167,64 @@ export default function App() {
           )}
         </section>
       </main>
+
+      {/* Demo Song Modal */}
+      <AnimatePresence>
+        {activeSong && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-sm"
+          >
+            <motion.div 
+              initial={{ scale: 0.9, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.9, y: 20 }}
+              className="brutalist-border bg-metal-gray w-full max-w-2xl max-h-[80vh] overflow-y-auto p-8 relative"
+            >
+              <button 
+                onClick={() => setActiveSong(null)}
+                className="absolute top-4 right-4 text-metal-white hover:text-metal-silver"
+              >
+                <X size={24} />
+              </button>
+
+              <div className="mb-8">
+                <h3 className="font-mono text-xs uppercase opacity-50 mb-1">Demo Track</h3>
+                <h2 className="text-4xl md:text-5xl font-display uppercase text-metal-white leading-none">
+                  {activeSong.title}
+                </h2>
+              </div>
+
+              <div className="space-y-8">
+                <div>
+                  <h4 className="font-mono text-xs uppercase border-b border-metal-white/20 pb-2 mb-4">Structure</h4>
+                  <p className="font-sans text-sm italic opacity-80">
+                    {activeSong.structure}
+                  </p>
+                </div>
+
+                <div>
+                  <h4 className="font-mono text-xs uppercase border-b border-metal-white/20 pb-2 mb-4">Lyrics</h4>
+                  <pre className="font-sans text-sm whitespace-pre-wrap leading-relaxed opacity-90">
+                    {activeSong.lyrics}
+                  </pre>
+                </div>
+              </div>
+
+              <div className="mt-12 flex justify-center">
+                <button 
+                  onClick={() => setActiveSong(null)}
+                  className="brutalist-button"
+                >
+                  Close Ritual
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <footer className="mt-20 pt-8 border-t border-metal-gray text-center font-mono text-[10px] uppercase opacity-40">
         <p>&copy; 2026 Metal Name Forge // Built for the Abyss</p>
